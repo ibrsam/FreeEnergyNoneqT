@@ -1,4 +1,4 @@
-# FreeEnergyNoneqT
+# FreeEnergyNoneqTI
 This notebook demonstrates the application of nonequilibrium techniques for the calculation of free energies of solids using molecular dynamics (MD) simulations. The methods implemented here are based on **Frenkel-Ladd**, and **Reversible-scaling** thermodynamic paths. 
 
 Calculations presented here are based on https://github.com/jan-janssen/pyiron-free-energy where classes for Frenkel-Ladd and Reversible Scaling are developed and tested within the pyiron package.
