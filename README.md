@@ -13,4 +13,4 @@ The main work intriduced here is based on reproducing the results of https://DOI
   - Contact: saad@mpie.de / eslam.saadibrahim@rub.de
 
 ## Jupyter notebooks on Binder
-https://mybinder.org/v2/gh/ibrsam/FreeEnergyNoneqTI.git/HEAD
+https://mybinder.org/v2/gh/ibrsam/FreeEnergyNoneqT/HEAD
