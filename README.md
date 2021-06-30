@@ -14,4 +14,5 @@ The main work intriduced here is based on reproducing the results of https://DOI
 
 ## Jupyter notebooks on Binder
 https://mybinder.org/v2/gh/ibrsam/FreeEnergyNoneqT/HEAD
+
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ibrsam/FreeEnergyNoneqT/HEAD)
