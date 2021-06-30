@@ -1,0 +1,67 @@
+# This script runs a Reversible Scaling thermodynamic integration for the calculation of the temperature dependence of the free energy of bcc iron. See job.sh for the variables that need to be passed in the command line.
+
+
+#--------------------------- Simulation variables -----------------------------#
+  # Initalizes the random number generator.
+  variable         rnd equal round(random(0,999,{{ RANDOM }}))
+
+  # Simulation control parameters.
+  variable         t_eq equal {{ t_eq }}            # Equilibration timesteps.
+  variable         t_switch equal {{ t_switch }}    # Switching timesteps.
+  variable         t_step equal {{ t_step }}        # Timestep.
+  variable         T equal {{temp}}                 # Simulation temperature.
+#------------------------------------------------------------------------------#
+
+
+#---------------------------- Atomic setup ------------------------------------#
+  units            metal
+
+  # Create atoms.
+  read_data        structure.inp
+
+  # Define Interatomic potential.
+  include          potential.inp
+  neigh_modify     delay 0
+  timestep         {{  t_step  }}
+#------------------------------------------------------------------------------#
+
+
+#----------------------------- Run simulation ---------------------------------#
+  # Setup thermo output.
+  thermo_style     custom step pe
+  thermo           0
+
+  # Integrator for barostat and thermostat.
+  fix              f1 all nph iso 0 0 1
+  fix              f2 all langevin {{ temp }} {{ temp }} 0.1 ${rnd} zero yes
+
+  # Compute temperature using center-of-mass coordinates.
+  compute          c1 all temp/com
+  fix_modify       f1 temp c1
+  fix_modify       f2 temp c1
+
+  # Initial temperature to accelerate equilibration.
+  variable         rnd equal round(random(0,666,0)) # Generates new rnd #.
+  variable         T0 equal 2*{{ temp }}
+  velocity         all create ${T0} ${rnd} dist gaussian
+
+  # Forward integration.
+  run              {{ t_eq }}
+  print            "$(pe/atoms) 1" file forward.dat
+  variable         lambda equal 1/(1+(elapsed/${t_switch})*({{ T_max }}/$T-1))
+  fix              f3 all adapt 1 pair {{ pair_style }} scale * * v_lambda
+  fix              f4 all print 1 "$(pe/atoms) ${lambda}" screen no &
+                   append forward.dat title "# pe lambda"
+  run              {{ t_switch }}
+  unfix            f3
+  unfix            f4
+
+  # Backward integration. 
+  run              {{ t_eq }}
+  print            "$(pe/atoms) $(v_T/{{ T_max }})" file backward.dat
+  variable         lambda equal 1/(1+(1-(elapsed/${t_switch}))*({{ T_max }}/$T-1))
+  fix              f3 all adapt 1 pair {{ pair_style }} scale * * v_lambda
+  fix              f4 all print 1 "$(pe/atoms) ${lambda}" screen no &
+                   append backward.dat title "# pe lambda"
+  run              {{ t_switch }}
+#------------------------------------------------------------------------------#

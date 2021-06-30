@@ -1,0 +1,67 @@
+# This script runs a Frenkel-Ladd thermodynamic integration for the calculation of the free energy of bcc iron. See job.sh for the variables that need to be passed in the command line.
+
+
+#--------------------------- Simulation variables -----------------------------#
+  # Initalizes the random number generator.
+  variable         rnd equal round(random(0,999,{{ RANDOM }}))
+
+  # Simulation control parameters.
+  variable         t_eq equal {{  t_eq  }}          # Equilibration timesteps.
+  variable         t_switch equal {{  t_switch  }}  # Switching timesteps.
+  variable         t_step equal {{  t_step  }}      # Timestep.
+  variable         T equal {{  temp  }}             # Simulation temprerature.
+#------------------------------------------------------------------------------#
+
+
+#---------------------------- Atomic setup ------------------------------------#
+  units            metal
+
+  # Create atoms.
+  read_data        structure.inp
+
+  # Define interatomic potential.
+  include          potential.inp
+  neigh_modify     delay 0
+  timestep         {{t_step}}
+#------------------------------------------------------------------------------#
+
+
+#----------------------------- Run simulation ---------------------------------#
+  # Integrator, Frenkel-Ladd modifier, and thermostat.
+  fix              f1 all nve 
+  fix              f2 all ti/spring {{k}} {{t_switch}} {{t_eq}} function 2
+  fix              f3 all langevin {{temp}} {{temp}} 0.1 ${rnd} zero yes
+
+  # Compute temperature using COM coordinates.
+  compute          c1 all temp/com
+  fix_modify       f3 temp c1
+
+  # Redefine simulation time to capture first and last steps on output files.
+  # Notice that this does not affect the switching time.
+  variable         t_eq equal ${t_eq}-1
+  variable         t_switch equal ${t_switch}+1
+
+  # Setup thermo output.
+  thermo_style     custom step pe
+  thermo           0
+  variable         dE equal pe-f_f2
+  variable         lambda equal f_f2[1]
+
+  # Initial temperature to accelerate equilibration.
+  variable         rnd equal round(random(1,666,0)) # Generates new rnd #.
+  variable         T0 equal 2*{{ temp }}
+  velocity         all create ${T0} ${rnd} dist gaussian
+
+  # Forward integration.
+  run              ${t_eq}
+  fix              f4 all print 1 "${dE} ${lambda}" title "# dE [eV] lambda" &
+                   screen no file forward.dat
+  run              ${t_switch}
+  unfix            f4
+
+  # Backward integration. 
+  run              ${t_eq}
+  fix              f4 all print 1 "${dE} ${lambda}" title "# dE [eV] lambda" &
+                   screen no file backward.dat
+  run              ${t_switch}
+#------------------------------------------------------------------------------#
