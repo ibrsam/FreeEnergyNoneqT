@@ -3,7 +3,7 @@ This notebook demonstrates the application of nonequilibrium techniques for the 
 
 Calculations presented here are based on https://github.com/jan-janssen/pyiron-free-energy where classes for Frenkel-Ladd and Reversible Scaling are developed and tested within the pyiron package.
 
-The main work intriduced here is based on reproducing the results of ["Nonequilibrium free-energy calculation of solids using LAMMPS" DOI:10.1016/j.commatsci.2015.10.050](https://DOI.org/10.1016/j.commatsci.2015.10.050).
+The main work introduced here is based on reproducing the results of ["Nonequilibrium free-energy calculation of solids using LAMMPS" DOI:10.1016/j.commatsci.2015.10.050](https://DOI.org/10.1016/j.commatsci.2015.10.050).
 
 ## python classes for nonequilibrium thermodynamic integration
   - Author: Eslam Saad  Ibrahim
